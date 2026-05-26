@@ -31,7 +31,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Live server par static files ke liye
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Live server par static files ke liye zaroori hai
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -61,12 +61,12 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 
 
 # Database Configuration
-# FIX: Agar Vercel par deploy ho toh SQLite chalaye, warna local PC par MySQL chalaye
+# FIX: Vercel par 'unable to open database file' error khatam karne ke liye /tmp folder use kiya hai
 if 'VERCEL' in os.environ:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': '/tmp/db.sqlite3',
         }
     }
 else:
@@ -81,7 +81,7 @@ else:
         }
     }
 
-# FIX: Agar future mein Render/دیگر کلاؤڈ پر الٹرنیٹ ڈیٹا بیس یو آر ایل سیٹ ہو
+# FIX: Agar Render ya kisi cloud par DATABASE_URL set ho toh usko use kare
 if os.environ.get('DATABASE_URL'):
     DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
 
