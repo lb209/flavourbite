@@ -12,10 +12,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-e9!l*oicslw!@-r-6r(oz!dsvx_s0rm1hnn#qf27_ubl754d#v'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Live server par agar koi error aaye toh debug ko False karna behtar hota hai
 DEBUG = True
 
-# Render par host karne ke liye '*' allowed hosts mein hona lazmi hai
+# Allowed hosts configuration
 ALLOWED_HOSTS = ['*', '.localhost', '127.0.0.1']
 
 
@@ -32,7 +31,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # FIX: Live server par static files ke liye zaroori hai
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Live server par static files ke liye
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -62,19 +61,27 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 
 
 # Database Configuration
-# Local par MySQL chalega, aur live hone par Render ka Database khud utha lega.
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mydatabase',
-        'USER': 'root',
-        'PASSWORD': '1234',
-        'HOST': 'localhost',
-        'PORT': '3306',
+# FIX: Agar Vercel par deploy ho toh SQLite chalaye, warna local PC par MySQL chalaye
+if 'VERCEL' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'mydatabase',
+            'USER': 'root',
+            'PASSWORD': '1234',
+            'HOST': 'localhost',
+            'PORT': '3306',
+        }
+    }
 
-# FIX: Agar live server par database setup mil jaye, toh usko default set kar de
+# FIX: Agar future mein Render/دیگر کلاؤڈ پر الٹرنیٹ ڈیٹا بیس یو آر ایل سیٹ ہو
 if os.environ.get('DATABASE_URL'):
     DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
 
@@ -102,7 +109,6 @@ STATICFILES_DIRS = [
     BASE_DIR / "home" / "home" / "static",
 ]
 
-# FIX: Live deployment ke liye static root batana zaroori hai
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Extra styling handler for Whitenoise storage speed
