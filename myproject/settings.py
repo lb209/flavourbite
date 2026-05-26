@@ -62,7 +62,7 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 
 
 # Database Configuration
-# FIX: 'unable to open database file' error se bachne ke liye Vercel par /tmp use kiya hai
+# FIX: Vercel par khali db ya permissions ke error se bachne ke liye /tmp folder use kiya hai
 if 'VERCEL' in os.environ or os.environ.get('SERVER_SOFTWARE', '').startswith('gunicorn'):
     DATABASES = {
         'default': {
@@ -123,7 +123,13 @@ STORAGES = {
     },
 }
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# FIX: Vercel par user images upload ke Read-only error ko khatam karne ke liye fiks kiya hai
+if 'VERCEL' in os.environ:
+    MEDIA_URL = '/tmp/media/'
+    MEDIA_ROOT = '/tmp/media'
+else:
+    # Local system par normal media folder chalega
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
