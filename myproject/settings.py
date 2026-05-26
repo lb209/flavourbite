@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 import dj_database_url
 import pymysql
@@ -31,7 +32,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Live server par static files ke liye zaroori hai
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Static files handling on live server
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -61,8 +62,8 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 
 
 # Database Configuration
-# FIX: Vercel par 'unable to open database file' error khatam karne ke liye /tmp folder use kiya hai
-if 'VERCEL' in os.environ:
+# FIX: 'unable to open database file' error se bachne ke liye Vercel par /tmp use kiya hai
+if 'VERCEL' in os.environ or os.environ.get('SERVER_SOFTWARE', '').startswith('gunicorn'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -70,6 +71,7 @@ if 'VERCEL' in os.environ:
         }
     }
 else:
+    # Apke local computer par MySQL chalega
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -81,7 +83,7 @@ else:
         }
     }
 
-# FIX: Agar Render ya kisi cloud par DATABASE_URL set ho toh usko use kare
+# Agar live hosting par DATABASE_URL set ho (Alternative cloud)
 if os.environ.get('DATABASE_URL'):
     DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
 
