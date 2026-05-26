@@ -1,0 +1,12 @@
+.nam {
+    color: red;
+    background-color: yellow;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.nam:hover {
+    background-color: orange;
+}

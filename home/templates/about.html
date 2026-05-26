@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Profile Data</title>
+
+</head>
+<body style="font-family:arial;background:#f1f1f1;">
+
+
+<h1 style="text-align:center;color:green;">
+Profile Data
+</h1>
+
+
+<div style="width:90%;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:10px;">
+
+
+<a href="/read/">
+
+<button style="padding:10px;
+background:blue;
+color:white;
+border:none;
+margin-bottom:20px;">
+
+Back To Student
+
+</button>
+
+</a>
+
+
+
+<table style="width:100%;
+border-collapse:collapse;">
+
+<tr style="background:green;color:white;">
+
+    <th style="padding:10px;">Student</th>
+
+    <th>Age</th>
+
+    <th>City</th>
+
+    <th>Phone</th>
+
+</tr>
+
+
+
+{% for i in profile %}
+
+<tr style="text-align:center;background:#eee;">
+
+    <td style="padding:10px;">
+        {{ i.student.name }}
+    </td>
+
+    <td>
+        {{ i.age }}
+    </td>
+
+    <td>
+        {{ i.city }}
+    </td>
+
+    <td>
+        {{ i.phone }}
+    </td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+</body>
+</html>
