@@ -1,129 +1,98 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
-from .models import Student, Profile
+from django.contrib.auth import authenticate
+from django.db.models import Count, Sum
+from .models import Order
+import re
 
-# ==================== REGISTER ====================
-def register_view(request):
-    if request.method == "POST":
-        username = request.POST.get("username")
-        email = request.POST.get("email")
-        password = request.POST.get("password")
+@api_view(['POST'])
+def register_user(request):
+    username = request.data.get('username')
+    email = request.data.get('email')
+    password = request.data.get('password')
 
-        if User.objects.filter(username=username).exists():
-            return render(request, "register.html", {"error": "User already exists"})
+    if not username or not email or not password:
+        return Response({"error": "All fields are required"})
 
-        # User create karein
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password
-        )
+    if User.objects.filter(username=username).exists():
+        return Response({"error": "Username already exists"})
+        
+    if User.objects.filter(email=email).exists():
+        return Response({"error": "Email already exists"})
 
-        # Student create karein (Yahan se extra password field hata di hai)
-        Student.objects.create(
-            user=user,
-            name=username,
-            email=email
-        )
+    if len(password) < 8:
+        return Response({"error": "Password must be at least 8 characters"})
 
-        return redirect("login")
+    if not re.search(r"[0-9]", password):
+        return Response({"error": "Password must contain a number"})
 
-    return render(request, "register.html")
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>/]", password):
+        return Response({"error": "Password must contain a special character"})
 
-
-# ==================== LOGIN ====================
-def login_view(request):
-    if request.method == "POST":
-        user = authenticate(
-            username=request.POST.get("username"),
-            password=request.POST.get("password")
-        )
-        if user:
-            login(request, user)
-            return redirect("read")
-
-    return render(request, "login.html")
+    User.objects.create_user(username=username, email=email, password=password)
+    return Response({"success": True, "message": "Signup successfully!"})
 
 
-# ==================== DASHBOARD (READ) ====================
-def read(request):
-    students = Student.objects.all()
+@api_view(['POST'])
+def login_user(request):
+    email = request.data.get('email')
+    password = request.data.get('password')
 
-    data = []
-    for s in students:
-        profile, _ = Profile.objects.get_or_create(student=s)
-        data.append({"student": s, "profile": profile})
+    if not email or not password:
+        return Response({"success": False, "error": "All fields are required"})
 
-    return render(request, "read.html", {"data": data})
+    try:
+        user_obj = User.objects.get(email=email)
+        actual_username = user_obj.username
+    except User.DoesNotExist:
+        actual_username = email
 
+    user = authenticate(username=actual_username, password=password)
+    if user:
+        return Response({"success": True, "username": user.username})
 
-# ==================== CREATE & UPDATE ====================
-def create_update(request, id=None):
-    student = None
-    profile = None
-
-    if id:
-        student = get_object_or_404(Student, id=id)
-        profile, _ = Profile.objects.get_or_create(student=student)
-
-    if request.method == "POST":
-        # Agar naya student hai (id nahi mili URL se)
-        if not student:
-            user = User.objects.create_user(
-                username=request.POST.get("name"),
-                email=request.POST.get("email"),
-                password="1234"
-            )
-            student = Student.objects.create(
-                user=user,
-                name=request.POST.get("name"),
-                email=request.POST.get("email")
-            )
-        else:
-            # FIX: Agar student pehle se majood hai (Update mode), toh us ka name aur email bhi update ho
-            student.name = request.POST.get("name")
-            student.email = request.POST.get("email")
-            student.save()
-
-        # Profile fetch ya create karein
-        profile, _ = Profile.objects.get_or_create(student=student)
-
-        # FIX: Age blank ka error hal karne ke liye safe check
-        age_value = request.POST.get("age")
-        if age_value and age_value.strip():
-            profile.age = int(age_value)
-        else:
-            profile.age = None  # Agar khali string ho toh crash na kare balki NULL save ho
-
-        profile.city = request.POST.get("city")
-        profile.phone = request.POST.get("phone")
-
-        # Files (Images) ko check karein
-        if "image" in request.FILES:
-            profile.image = request.FILES["image"]
-
-        # Data save karein
-        profile.save()
-
-        # Dashboard par redirect karein
-        return redirect("read")
-
-    return render(request, "form.html", {"student": student, "profile": profile})
+    return Response({"success": False, "error": "Invalid Email or Password"})
 
 
-# ==================== VIEW PROFILE ====================
-def profile_view(request, id):
-    student = get_object_or_404(Student, id=id)
-    profile = get_object_or_404(Profile, student=student)
+@api_view(['POST'])
+def create_order(request):
+    card_number = request.data.get('card_number')
+    total_price = request.data.get('total_price')
 
-    return render(request, "profile.html", {
-        "student": student,
-        "profile": profile
+    if not card_number or not total_price:
+        return Response({"success": False, "error": "Card number and total price are required"})
+
+    if not re.match(r"^\d{11}$", str(card_number)):
+        return Response({"success": False, "error": "Card number must be exactly 11 digits"})
+
+    Order.objects.create(card_number=card_number, total_price=total_price, status='Completed')
+    return Response({"success": True, "message": "Order placed successfully!"})
+
+
+@api_view(['GET'])
+def dashboard_stats(request):
+    # یہ لائیو ڈیٹا بیس کا ڈیٹا نکالے گی
+    total_orders = Order.objects.count()
+    revenue_sum = Order.objects.aggregate(Sum('total_price'))['total_price__sum'] or 0
+
+    return Response({
+        "total_orders": total_orders,
+        "raw_revenue": float(revenue_sum),
     })
 
 
-# ==================== DELETE ====================
-def delete(request, id):
-    Student.objects.get(id=id).delete()
-    return redirect("read")
+
+from django.http import JsonResponse
+
+def api_home(request):
+    return JsonResponse({
+        "message": "Welcome to Foodie API Backend!",
+        "status": "Running",
+        "available_endpoints": [
+            "/api/register/",
+            "/api/login/",
+            "/api/create-order/",
+            "/api/dashboard-stats/"
+        ]
+    })

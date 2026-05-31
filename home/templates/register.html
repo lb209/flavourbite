@@ -1,39 +1,23 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Register Page</title>
-</head>
+<h1>Register</h1>
 
-<body style="margin:0; font-family:Arial; background:linear-gradient(120deg,#43e97b,#38f9d7); height:100vh; display:flex; justify-content:center; align-items:center;">
+<form method="POST">
+    {% csrf_token %}
 
-    <div style="background:white; padding:30px; border-radius:15px; width:320px; box-shadow:0px 10px 30px rgba(0,0,0,0.3);">
+    <input type="text" name="username" placeholder="Username">
+    <br><br>
 
-        <h2 style="text-align:center; color:#333;">Register</h2>
+    <input type="email" name="email" placeholder="Email">
+    <br><br>
 
-        <form method="POST">
-            {% csrf_token %}
+    <input type="password" name="password" placeholder="Password">  
+    <br><br>
 
-            <input type="text" name="username" placeholder="Username"
-                style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:8px;">
+    <button type="submit">
+        Register
+    </button>
+    {% for message in messages %}
 
-            <input type="email" name="email" placeholder="Email"
-                style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:8px;">
+    <h3>{{ message }}</h3>
 
-            <input type="password" name="password" placeholder="Password"
-                style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:8px;">
-
-            <button type="submit"
-                style="width:100%; padding:10px; background:#43e97b; border:none; color:white; border-radius:8px; cursor:pointer;">
-                Register
-            </button>
-        </form>
-
-        <p style="text-align:center; margin-top:10px;">
-            Already have account?
-            <a href="/" style="color:#43e97b; text-decoration:none;">Login</a>
-        </p>
-
-    </div>
-
-</body>
-</html>
+{% endfor %}
+</form>

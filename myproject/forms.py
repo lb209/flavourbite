@@ -1,10 +1,23 @@
+
 from django import forms
-from home.models import Profile
+
+from home.models import Student, Book
 
 
-# ---------------- PROFILE FORM ----------------
-class ProfileForm(forms.ModelForm):
+class StudentForm(forms.ModelForm):
 
     class Meta:
-        model = Profile
-        fields = ['name', 'city']
+
+        model = Student
+
+        fields = ['name', 'email']
+
+
+class BookForm(forms.ModelForm):
+
+    class Meta:
+
+        model = Book
+
+        fields = ['book_name', 'author', 'price']
+

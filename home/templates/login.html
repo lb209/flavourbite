@@ -1,38 +1,20 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Login Page</title>
-</head>
+<h1>Login</h1>
 
-<body style="margin:0; font-family:Arial; background:linear-gradient(120deg,#4facfe,#00f2fe); height:100vh; display:flex; justify-content:center; align-items:center;">
+<form method="POST">
+    {% csrf_token %}
 
-    <div style="background:white; padding:30px; border-radius:15px; width:320px; box-shadow:0px 10px 30px rgba(0,0,0,0.3);">
+    <input type="text" name="username" placeholder="Username">
+    <br><br>
 
-        <h2 style="text-align:center; color:#333;">Login</h2>
+    <input type="password" name="password" placeholder="Password">
+    <br><br>
 
-        <form method="POST">
-            {% csrf_token %}
+    <button type="submit">
+        Login
+    </button>
+    {% for message in messages %}
 
-            <input type="text" name="username" placeholder="Username"
-                style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:8px;">
+    <h3>{{ message }}</h3>
 
-            <input type="password" name="password" placeholder="Password"
-                style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:8px;">
-
-            <button type="submit"
-                style="width:100%; padding:10px; background:#4facfe; border:none; color:white; border-radius:8px; cursor:pointer;">
-                Login
-            </button>
-        </form>
-
-        <p style="text-align:center; margin-top:10px;">
-            Don't have account?
-            <a href="/register/" style="color:#4facfe; text-decoration:none;">Register</a>
-        </p>
-
-        <p style="color:red; text-align:center;">{{ error }}</p>
-
-    </div>
-
-</body>
-</html>
+{% endfor %}
+</form>
